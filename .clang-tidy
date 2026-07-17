@@ -1,0 +1,17 @@
+# A focused check set: real bugs and portability, plus LLVM's own conventions.
+# We keep the naming checks off here because the code deliberately mixes file
+# level snake_case with LLVM style CamelCase/camelBack inside pass bodies, a
+# split documented in docs/design_decisions.md.
+Checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  modernize-use-override,
+  modernize-use-nullptr,
+  llvm-namespace-comment,
+  -bugprone-easily-swappable-parameters,
+  -clang-analyzer-optin.cplusplus.VirtualCall
+
+WarningsAsErrors: ''
+HeaderFilterRegex: 'include/opf/.*'
+FormatStyle: file

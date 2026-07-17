@@ -1,0 +1,7 @@
+# The code lives inside the LLVM ecosystem and calls LLVM APIs constantly, so it
+# follows LLVM formatting to read as one body with the headers it uses.
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: c++17
+ColumnLimit: 80
+PointerAlignment: Right

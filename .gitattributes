@@ -1,0 +1,8 @@
+# This repository is developed and built on Linux. Normalize every text file to
+# LF so shell scripts, IR fixtures, and lit config behave identically no matter
+# which platform checks the tree out.
+* text=auto eol=lf
+
+*.png binary
+*.pdf binary
+*.jpg binary

@@ -1,0 +1,44 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# The pinned LLVM major. Keep in sync with OPF_LLVM_VERSION_MAJOR in
+# CMakeLists.txt and the README apt line.
+env:
+  OPF_LLVM_MAJOR: "21"
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned LLVM from apt.llvm.org
+        run: |
+          set -eux
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key \
+            | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
+          source /etc/os-release
+          echo "deb http://apt.llvm.org/${UBUNTU_CODENAME}/ llvm-toolchain-${UBUNTU_CODENAME}-${OPF_LLVM_MAJOR} main" \
+            | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y \
+            llvm-${OPF_LLVM_MAJOR}-dev clang-${OPF_LLVM_MAJOR} \
+            llvm-${OPF_LLVM_MAJOR}-tools clang-format-${OPF_LLVM_MAJOR} \
+            cmake ninja-build python3
+
+      - name: Style: dash lint
+        run: python3 scripts/check_no_dashes.py
+
+      - name: Style: clang-format
+        run: bash scripts/check_format.sh
+
+      - name: Build
+        run: bash scripts/build.sh
+
+      - name: Test (unit + lit)
+        run: ctest --test-dir build --output-on-failure

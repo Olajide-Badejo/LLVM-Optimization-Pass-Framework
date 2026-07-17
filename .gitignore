@@ -1,0 +1,35 @@
+# Build trees
+/build/
+/build-*/
+*.o
+*.so
+*.a
+
+# Benchmark raw output is reproducible and large; only the canonical CSV is
+# tracked. See benchmarks/results/.
+/benchmarks/results/raw/
+
+# Python
+__pycache__/
+*.pyc
+/.venv/
+/benchmarks/harness/.venv/
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+*.synctex.gz
+*.lof
+*.lot
+
+# Editor and OS cruft
+.vscode/
+.idea/
+*.swp
+.DS_Store
