@@ -16,6 +16,11 @@
 #include "llvm/IR/PassManager.h"
 #include "llvm/Passes/PassBuilder.h"
 #include "llvm/Passes/PassPlugin.h"
+#include "llvm/Support/raw_ostream.h"
+
+#include "opf/analysis/block_stats.hpp"
+#include "opf/analysis/opcode_stats.hpp"
+#include "opf/support/metrics_json.hpp"
 
 using namespace llvm;
 
@@ -31,21 +36,43 @@ struct NoOpPass : PassInfoMixin<NoOpPass> {
     return PreservedAnalyses::all();
   }
 
-  // Even passes registered purely through the pipeline parser benefit from a
-  // stable name for logs and for opt's -debug-pass-manager output.
   static StringRef name() { return "my-noop"; }
 };
 
-// Registers the framework's function passes on a pipeline parsing callback.
-// Returning true tells PassBuilder the name was consumed; false lets other
-// plugins and the builtin parser have a turn.
+// Function pass names. Returning true tells PassBuilder the name was consumed;
+// false lets other plugins and the builtin parser have a turn.
 static bool registerFunctionPass(StringRef Name, FunctionPassManager &FPM,
                                  ArrayRef<PassBuilder::PipelineElement>) {
   if (Name == "my-noop") {
     FPM.addPass(NoOpPass());
     return true;
   }
+  if (Name == "my-print-opcode-stats") {
+    FPM.addPass(OpcodeStatsPrinter(outs()));
+    return true;
+  }
+  if (Name == "my-print-block-stats") {
+    FPM.addPass(BlockStatsPrinter(outs()));
+    return true;
+  }
   return false;
+}
+
+// Module pass names.
+static bool registerModulePass(StringRef Name, ModulePassManager &MPM,
+                               ArrayRef<PassBuilder::PipelineElement>) {
+  if (Name == "my-metrics-json") {
+    MPM.addPass(MetricsJSONEmitter(outs()));
+    return true;
+  }
+  return false;
+}
+
+// Makes the framework's analyses available to any pass that asks the
+// FunctionAnalysisManager for them.
+static void registerAnalyses(FunctionAnalysisManager &FAM) {
+  FAM.registerPass([] { return OpcodeStatsAnalysis(); });
+  FAM.registerPass([] { return BlockStatsAnalysis(); });
 }
 
 static void registerCallbacks(PassBuilder &PB) {
@@ -54,6 +81,13 @@ static void registerCallbacks(PassBuilder &PB) {
          ArrayRef<PassBuilder::PipelineElement> Pipeline) {
         return registerFunctionPass(Name, FPM, Pipeline);
       });
+  PB.registerPipelineParsingCallback(
+      [](StringRef Name, ModulePassManager &MPM,
+         ArrayRef<PassBuilder::PipelineElement> Pipeline) {
+        return registerModulePass(Name, MPM, Pipeline);
+      });
+  PB.registerAnalysisRegistrationCallback(
+      [](FunctionAnalysisManager &FAM) { registerAnalyses(FAM); });
 }
 
 } // namespace opf

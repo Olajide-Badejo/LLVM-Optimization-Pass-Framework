@@ -4,7 +4,10 @@
 # This list grows one entry per phase as passes land. Keeping it explicit (no
 # globbing) means the build never silently picks up a half written file.
 set(OPF_SOURCES
-  plugin_registration.cpp)
+  plugin_registration.cpp
+  support/metrics_json.cpp
+  analysis/opcode_stats.cpp
+  analysis/block_stats.cpp)
 
 add_library(OPFPasses MODULE ${OPF_SOURCES})
 
