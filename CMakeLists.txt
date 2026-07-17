@@ -10,6 +10,20 @@ project(opf
   DESCRIPTION "Out of tree LLVM new pass manager optimization framework"
   LANGUAGES C CXX)
 
+# LLVM's exported targets reference zstd::libzstd_shared because the
+# distribution was built with zstd. Make that imported target resolvable before
+# LLVM's config is read, with a shim for any system whose zstd ships no CMake
+# package (keeps CI portable).
+find_package(zstd QUIET)
+if(NOT TARGET zstd::libzstd_shared)
+  find_library(OPF_ZSTD_LIB NAMES zstd)
+  if(OPF_ZSTD_LIB)
+    add_library(zstd::libzstd_shared UNKNOWN IMPORTED)
+    set_target_properties(zstd::libzstd_shared PROPERTIES
+      IMPORTED_LOCATION "${OPF_ZSTD_LIB}")
+  endif()
+endif()
+
 # LLVM's version config rejects a bare major such as "21" as incompatible with
 # "21.1.8", so we take whatever config LLVM_DIR points at and enforce the pin
 # ourselves against LLVM_VERSION_MAJOR below.

@@ -19,7 +19,9 @@
 #include "llvm/Support/raw_ostream.h"
 
 #include "opf/analysis/block_stats.hpp"
+#include "opf/analysis/dead_code_report.hpp"
 #include "opf/analysis/opcode_stats.hpp"
+#include "opf/analysis/simplify_opportunities.hpp"
 #include "opf/support/metrics_json.hpp"
 
 using namespace llvm;
@@ -55,6 +57,14 @@ static bool registerFunctionPass(StringRef Name, FunctionPassManager &FPM,
     FPM.addPass(BlockStatsPrinter(outs()));
     return true;
   }
+  if (Name == "my-print-dead-code") {
+    FPM.addPass(DeadCodeReportPrinter(outs()));
+    return true;
+  }
+  if (Name == "my-print-simplify-opps") {
+    FPM.addPass(SimplifyOpportunitiesPrinter(outs()));
+    return true;
+  }
   return false;
 }
 
@@ -73,6 +83,8 @@ static bool registerModulePass(StringRef Name, ModulePassManager &MPM,
 static void registerAnalyses(FunctionAnalysisManager &FAM) {
   FAM.registerPass([] { return OpcodeStatsAnalysis(); });
   FAM.registerPass([] { return BlockStatsAnalysis(); });
+  FAM.registerPass([] { return DeadCodeAnalysis(); });
+  FAM.registerPass([] { return SimplifyOpportunitiesAnalysis(); });
 }
 
 static void registerCallbacks(PassBuilder &PB) {

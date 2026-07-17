@@ -1,4 +1,4 @@
-# Test wiring grows across phases. The lit suite (FileCheck over .ll) lands in
-# Phase 3 and the GoogleTest unit suite in Phase 2; both are added here as they
-# arrive so that a single ctest run covers everything.
+# A single ctest run covers both suites: the GoogleTest unit tests over analysis
+# math, and the lit/FileCheck IR tests.
+add_subdirectory(unit)
 add_subdirectory(lit)
