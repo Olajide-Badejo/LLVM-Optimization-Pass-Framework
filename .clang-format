@@ -2,6 +2,6 @@
 # follows LLVM formatting to read as one body with the headers it uses.
 BasedOnStyle: LLVM
 Language: Cpp
-Standard: c++17
+Standard: c++20
 ColumnLimit: 80
 PointerAlignment: Right

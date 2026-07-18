@@ -13,7 +13,7 @@ add_executable(opf_unit
   invalidation_test.cpp)
 
 set_target_properties(opf_unit PROPERTIES
-  CXX_STANDARD 17
+  CXX_STANDARD 20
   CXX_STANDARD_REQUIRED ON
   CXX_EXTENSIONS OFF)
 

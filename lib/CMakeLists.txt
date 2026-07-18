@@ -26,7 +26,7 @@ target_include_directories(opf_core PUBLIC "${CMAKE_SOURCE_DIR}/include")
 target_include_directories(opf_core SYSTEM PUBLIC ${LLVM_INCLUDE_DIRS})
 
 set_target_properties(opf_core PROPERTIES
-  CXX_STANDARD 17
+  CXX_STANDARD 20
   CXX_STANDARD_REQUIRED ON
   CXX_EXTENSIONS OFF
   POSITION_INDEPENDENT_CODE ON)
@@ -42,7 +42,7 @@ add_library(OPFPasses MODULE plugin_registration.cpp)
 target_link_libraries(OPFPasses PRIVATE opf_core)
 
 set_target_properties(OPFPasses PROPERTIES
-  CXX_STANDARD 17
+  CXX_STANDARD 20
   CXX_STANDARD_REQUIRED ON
   CXX_EXTENSIONS OFF
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
