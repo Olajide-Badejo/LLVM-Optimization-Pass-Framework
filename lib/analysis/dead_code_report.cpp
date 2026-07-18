@@ -1,7 +1,7 @@
 //===- dead_code_report.cpp - dead instructions and chain depth ----------===//
 //
 // Part of the llvm-optimization-pass-framework project.
-// Licensed under the Apache License v2.0 with LLVM Exceptions.
+// Licensed under the MIT License.
 //
 //===----------------------------------------------------------------------===//
 

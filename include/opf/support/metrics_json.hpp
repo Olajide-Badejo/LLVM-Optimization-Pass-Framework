@@ -1,7 +1,7 @@
 //===- metrics_json.hpp - one JSON document of all IR metrics -------------===//
 //
 // Part of the llvm-optimization-pass-framework project.
-// Licensed under the Apache License v2.0 with LLVM Exceptions.
+// Licensed under the MIT License.
 //
 //===----------------------------------------------------------------------===//
 //

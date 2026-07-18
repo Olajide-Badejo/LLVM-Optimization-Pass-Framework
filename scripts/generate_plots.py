@@ -31,6 +31,9 @@ BENCH_CSV = RESULTS / "benchmarks.csv"
 OPCODES_CSV = RESULTS / "opcodes.csv"
 FIG_DIR = REPO_ROOT / "report" / "figures"
 TAB_DIR = REPO_ROOT / "report" / "tables"
+# PNG copies of the figures for the README, which GitHub renders inline (it does
+# not render PDF inline).
+ASSETS_IMG = REPO_ROOT / "assets" / "images"
 
 CONFIGS = ["baseline", "ours", "o1"]
 CONFIG_LABELS = {"baseline": "baseline", "ours": "my-default", "o1": "opt -O1"}
@@ -68,6 +71,14 @@ def configure_style() -> None:
         "grid.color": GRID,
         "grid.linewidth": 0.8,
     })
+
+
+def save_figure(fig, stem: str) -> None:
+    """Save a figure as a PDF for the report and a PNG for the README."""
+    FIG_DIR.mkdir(parents=True, exist_ok=True)
+    ASSETS_IMG.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG_DIR / f"{stem}.pdf")
+    fig.savefig(ASSETS_IMG / f"{stem}.png", dpi=150)
 
 
 def read_bench() -> list[dict]:
@@ -132,7 +143,7 @@ def fig_instruction_counts(rows: list[dict]) -> None:
     grouped_bars(ax, kernels, CONFIGS, values)
     ax.set_ylabel("total IR instructions")
     ax.set_title("IR instruction count by kernel and configuration")
-    fig.savefig(FIG_DIR / "instruction_counts.pdf")
+    save_figure(fig, "instruction_counts")
     plt.close(fig)
 
 
@@ -154,7 +165,7 @@ def fig_instruction_reduction(rows: list[dict]) -> None:
                     ha="center", va="bottom", fontsize=8, color=MUTED)
     ax.set_ylabel("instruction reduction by my-default (percent)")
     ax.set_title("How much the framework removes, relative to the SSA baseline")
-    fig.savefig(FIG_DIR / "instruction_reduction.pdf")
+    save_figure(fig, "instruction_reduction")
     plt.close(fig)
 
 
@@ -166,7 +177,7 @@ def fig_runtime(rows: list[dict]) -> None:
     grouped_bars(ax, kernels, CONFIGS, medians, errors=iqrs, labels=False)
     ax.set_ylabel("median runtime (ms), error bar is IQR")
     ax.set_title("Runtime by kernel and configuration (backend at -O0)")
-    fig.savefig(FIG_DIR / "runtime_medians.pdf")
+    save_figure(fig, "runtime_medians")
     plt.close(fig)
 
 
@@ -192,7 +203,7 @@ def fig_opcode_delta(opcodes: list[dict]) -> None:
     ax.set_ylabel("count")
     ax.set_title(f"Per opcode counts, {SHOWCASE_KERNEL}: baseline vs my-default")
     ax.legend(frameon=False, fontsize=9)
-    fig.savefig(FIG_DIR / "opcode_delta.pdf")
+    save_figure(fig, "opcode_delta")
     plt.close(fig)
 
 

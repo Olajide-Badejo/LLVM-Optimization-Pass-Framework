@@ -1,7 +1,7 @@
 //===- local_cse.cpp - block local common subexpression cleanup ----------===//
 //
 // Part of the llvm-optimization-pass-framework project.
-// Licensed under the Apache License v2.0 with LLVM Exceptions.
+// Licensed under the MIT License.
 //
 //===----------------------------------------------------------------------===//
 

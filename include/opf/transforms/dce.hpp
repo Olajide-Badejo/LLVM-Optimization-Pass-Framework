@@ -1,7 +1,7 @@
 //===- dce.hpp - dead code elimination -----------------------------------===//
 //
 // Part of the llvm-optimization-pass-framework project.
-// Licensed under the Apache License v2.0 with LLVM Exceptions.
+// Licensed under the MIT License.
 //
 //===----------------------------------------------------------------------===//
 //
