@@ -77,3 +77,47 @@ and the test would fail on the spot.
 **Verified.** `Invalidation.TransformForcesAnalysisRecompute` passes with the
 count going from 4 to 1; flipping a transform to `PreservedAnalyses::all()`
 locally made it fail as intended before I reverted the experiment.
+
+## 2026-07-18 Phase 5: optnone made the whole pipeline a no-op
+
+**Symptom.** The first time I pointed the harness at a real kernel, my-default
+reported zero rewrites on functions I knew were full of identities, and the
+transformed IR was identical to the baseline.
+
+**Root cause.** `clang -O0` attaches the `optnone` attribute to every function,
+and the new PassManager honors it by skipping optimization passes entirely. My
+passes were loaded and registered correctly; they were simply never run on the
+kernel functions.
+
+**Options.** (1) Compile the kernels at `-O1` and accept that the frontend has
+already optimized them, muddying the before picture. (2) Keep `-O0` for a clean
+unoptimized baseline but strip optnone so passes run.
+
+**Fix.** Option 2: `clang -O0 -Xclang -disable-O0-optnone`. This yields the
+naive `-O0` IR I want as a baseline while letting `opt` actually transform it.
+The harness sets it for every kernel and the manifest records it.
+
+**Verified.** After the flag, my-default reports real rewrite counts and the
+transformed IR shrinks; the differential checksum still matches the baseline.
+
+## 2026-07-18 Phase 5: small kernels and timing noise
+
+**Symptom.** Two of the four kernels show a runtime difference between baseline
+and our pipeline that is smaller than the interquartile range of the samples.
+
+**Root cause.** Not a bug. The kernels run in tens of milliseconds, and under
+WSL2 there is no CPU governor control, so a few milliseconds of jitter is
+expected. For `branchy` and `clean` the structural change is small or zero, so
+there is genuinely little runtime to move.
+
+**Options.** (1) Inflate the workloads until every kernel shows a runtime delta.
+(2) Report the deltas honestly and label the noise dominated ones as structural
+only.
+
+**Fix.** Option 2, per the project's ground rules. `arith_redundant` shows a
+real speedup well outside the IQR; the others are presented as structural
+results with the timing noise stated plainly. Padding the workload to
+manufacture a runtime story would be dishonest.
+
+**Verified.** The results table and the runtime figure show the IQR as error
+bars, so a reader can see for themselves which deltas are signal.

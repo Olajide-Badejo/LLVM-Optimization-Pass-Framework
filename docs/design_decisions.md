@@ -40,6 +40,29 @@ Every lit RUN line quotes `%s`, `%opflib`, and tool paths so the suite passes
 from any checkout location, including paths with spaces. See the engineering log
 entry for the failure that motivated this.
 
+## The my-default pipeline lives in its own file
+
+The spec's file layout names the transforms and `support/pipeline_logging`, but
+the fixed point driver that composes them needed a home. It lives in
+`transforms/default_pipeline.{hpp,cpp}` as an extension of the transform layer,
+with the per iteration record in `support/pipeline_logging`. The driver is a
+free function so the integration test can inspect the iteration log directly.
+
+## mem2reg before measuring
+
+The benchmark harness runs `opt -passes=mem2reg` to form the SSA baseline before
+either our pipeline or `opt -O1`. mem2reg is universal canonicalization into SSA
+that any middle end assumes, not one of our optimizations, and running it for
+both configurations keeps the comparison fair while giving the scalar transforms
+registers to act on. This is documented in `docs/benchmarks.md` and recorded in
+every run manifest.
+
+## Figures and tables are generated, never committed by hand
+
+`scripts/generate_plots.py` is the only thing that writes `report/figures` and
+`report/tables`, straight from the CSV. The report `\input`s the generated
+files, so there is no path by which a hand typed number reaches the PDF.
+
 ## Analysis and transform separation
 
 Analyses compute and cache facts and declare invalidation correctly; transforms
