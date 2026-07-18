@@ -1,0 +1,15 @@
+# Python tooling configuration. The harness and plotting scripts are linted with
+# ruff. The rule set is intentionally practical: correctness and import hygiene
+# and pyflakes, not a docstring crusade over small local helpers.
+[tool.ruff]
+line-length = 80
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B"]
+ignore = [
+  "E501",  # line length is enforced by the formatter, not the linter
+]
+
+[tool.ruff.format]
+quote-style = "double"

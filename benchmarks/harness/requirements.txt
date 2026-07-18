@@ -1,0 +1,6 @@
+# Harness and plotting dependencies. tqdm drives the progress bars; matplotlib
+# renders the figures in generate_plots.py. Both share one virtualenv created by
+# scripts/run_benchmarks.sh.
+tqdm>=4.66
+matplotlib>=3.8
+ruff>=0.6

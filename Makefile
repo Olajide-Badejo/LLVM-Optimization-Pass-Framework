@@ -31,6 +31,8 @@ check-style:
 	python3 scripts/check_no_dashes.py
 	@echo "=== clang-format check ==="
 	@bash scripts/check_format.sh
+	@echo "=== ruff (if available) ==="
+	@bash scripts/check_python.sh
 
 format:
 	@bash scripts/check_format.sh --fix
