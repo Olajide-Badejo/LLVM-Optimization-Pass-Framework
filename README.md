@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Olajide-Badejo/LLVM-Optimization-Pass-Framework/actions/workflows/ci.yml/badge.svg)](https://github.com/Olajide-Badejo/LLVM-Optimization-Pass-Framework/actions/workflows/ci.yml)
 ![LLVM 21](https://img.shields.io/badge/LLVM-21-blue)
-![C++17](https://img.shields.io/badge/C%2B%2B-17-blue)
+![C++20](https://img.shields.io/badge/C%2B%2B-20-blue)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
 An out of tree **LLVM middle end optimization framework**: custom analysis and
