@@ -9,6 +9,7 @@
 set(OPF_CORE_SOURCES
   support/metrics_json.cpp
   support/instruction_key.cpp
+  support/pipeline_logging.cpp
   analysis/opcode_stats.cpp
   analysis/block_stats.cpp
   analysis/dead_code_report.cpp
@@ -16,7 +17,8 @@ set(OPF_CORE_SOURCES
   transforms/canonicalize.cpp
   transforms/algebraic_simplify.cpp
   transforms/dce.cpp
-  transforms/local_cse.cpp)
+  transforms/local_cse.cpp
+  transforms/default_pipeline.cpp)
 
 add_library(opf_core OBJECT ${OPF_CORE_SOURCES})
 

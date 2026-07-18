@@ -3,10 +3,14 @@
 # the LLVM libraries they parse and inspect IR with.
 find_package(GTest REQUIRED)
 
+# "passes" pulls in PassBuilder, which the invalidation test uses to set up the
+# analysis managers exactly as opt does.
 llvm_map_components_to_libnames(OPF_LLVM_LIBS
-  core support asmparser irreader analysis)
+  core support asmparser irreader analysis passes)
 
-add_executable(opf_unit analysis_metrics_test.cpp)
+add_executable(opf_unit
+  analysis_metrics_test.cpp
+  invalidation_test.cpp)
 
 set_target_properties(opf_unit PROPERTIES
   CXX_STANDARD 17

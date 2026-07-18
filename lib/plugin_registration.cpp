@@ -26,6 +26,7 @@
 #include "opf/transforms/algebraic_simplify.hpp"
 #include "opf/transforms/canonicalize.hpp"
 #include "opf/transforms/dce.hpp"
+#include "opf/transforms/default_pipeline.hpp"
 #include "opf/transforms/local_cse.hpp"
 
 using namespace llvm;
@@ -83,6 +84,16 @@ static bool registerFunctionPass(StringRef Name, FunctionPassManager &FPM,
   }
   if (Name == "my-dce") {
     FPM.addPass(DCEPass());
+    return true;
+  }
+  if (Name == "my-default") {
+    FPM.addPass(DefaultPipelinePass());
+    return true;
+  }
+  if (Name == "my-default-verbose") {
+    // The iteration log goes to stderr so the transformed IR on stdout stays
+    // clean for piping and for FileCheck.
+    FPM.addPass(DefaultPipelinePass(&errs()));
     return true;
   }
   return false;

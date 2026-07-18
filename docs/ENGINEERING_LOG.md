@@ -51,3 +51,29 @@ robust anyway, since it also survives a user cloning into a spaced path, which
 LLVM's own in tree tests never have to worry about.
 
 **Verified.** `lit -v build/tests/lit` reports `PASS: opf :: smoke_noop.ll`.
+
+## 2026-07-18 Phase 4: proving invalidation instead of assuming it
+
+**Symptom.** Not a failure so much as a trap I wanted to close: it is easy to
+return `PreservedAnalyses::all()` out of habit or convenience, and nothing at
+build time catches it. A transform that quietly over claims preservation leaves
+later passes reading stale analysis results, which is exactly the class of bug
+this project is meant to demonstrate command over.
+
+**Root cause.** The transforms genuinely change instructions but preserve the
+CFG, so the honest answer is `preserveSet<CFGAnalyses>()`, not all. Getting that
+one line right is the difference between a dependent analysis recomputing and it
+serving a stale cache.
+
+**Options.** (1) Trust the code review eye. (2) Write a test that would fail if a
+transform over claimed preservation.
+
+**Fix.** Option 2. The invalidation test caches an opcode count, runs the
+algebraic simplifier through a real FunctionPassManager (so the invalidation
+machinery actually runs), then requests the count again and asserts it dropped.
+If the simplifier returned `all()`, the manager would hand back the stale count
+and the test would fail on the spot.
+
+**Verified.** `Invalidation.TransformForcesAnalysisRecompute` passes with the
+count going from 4 to 1; flipping a transform to `PreservedAnalyses::all()`
+locally made it fail as intended before I reverted the experiment.
