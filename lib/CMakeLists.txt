@@ -8,10 +8,15 @@
 # globbing) so the build never silently picks up a half written file.
 set(OPF_CORE_SOURCES
   support/metrics_json.cpp
+  support/instruction_key.cpp
   analysis/opcode_stats.cpp
   analysis/block_stats.cpp
   analysis/dead_code_report.cpp
-  analysis/simplify_opportunities.cpp)
+  analysis/simplify_opportunities.cpp
+  transforms/canonicalize.cpp
+  transforms/algebraic_simplify.cpp
+  transforms/dce.cpp
+  transforms/local_cse.cpp)
 
 add_library(opf_core OBJECT ${OPF_CORE_SOURCES})
 

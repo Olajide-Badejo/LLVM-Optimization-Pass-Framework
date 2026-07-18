@@ -23,6 +23,10 @@
 #include "opf/analysis/opcode_stats.hpp"
 #include "opf/analysis/simplify_opportunities.hpp"
 #include "opf/support/metrics_json.hpp"
+#include "opf/transforms/algebraic_simplify.hpp"
+#include "opf/transforms/canonicalize.hpp"
+#include "opf/transforms/dce.hpp"
+#include "opf/transforms/local_cse.hpp"
 
 using namespace llvm;
 
@@ -63,6 +67,22 @@ static bool registerFunctionPass(StringRef Name, FunctionPassManager &FPM,
   }
   if (Name == "my-print-simplify-opps") {
     FPM.addPass(SimplifyOpportunitiesPrinter(outs()));
+    return true;
+  }
+  if (Name == "my-canon") {
+    FPM.addPass(CanonicalizePass());
+    return true;
+  }
+  if (Name == "my-simplify") {
+    FPM.addPass(AlgebraicSimplifyPass());
+    return true;
+  }
+  if (Name == "my-local-cse") {
+    FPM.addPass(LocalCSEPass());
+    return true;
+  }
+  if (Name == "my-dce") {
+    FPM.addPass(DCEPass());
     return true;
   }
   return false;
