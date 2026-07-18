@@ -29,12 +29,13 @@ jobs:
           sudo apt-get install -y \
             llvm-${OPF_LLVM_MAJOR}-dev clang-${OPF_LLVM_MAJOR} \
             llvm-${OPF_LLVM_MAJOR}-tools clang-format-${OPF_LLVM_MAJOR} \
+            libgtest-dev libgmock-dev libzstd-dev \
             cmake ninja-build python3
 
-      - name: Style: dash lint
+      - name: "Style: dash lint"
         run: python3 scripts/check_no_dashes.py
 
-      - name: Style: clang-format
+      - name: "Style: clang-format"
         run: bash scripts/check_format.sh
 
       - name: Build
@@ -42,3 +43,54 @@ jobs:
 
       - name: Test (unit + lit)
         run: ctest --test-dir build --output-on-failure
+
+  benchmark-and-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pinned LLVM and the LaTeX toolchain
+        run: |
+          set -eux
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key \
+            | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc >/dev/null
+          source /etc/os-release
+          echo "deb http://apt.llvm.org/${UBUNTU_CODENAME}/ llvm-toolchain-${UBUNTU_CODENAME}-${OPF_LLVM_MAJOR} main" \
+            | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y \
+            llvm-${OPF_LLVM_MAJOR}-dev clang-${OPF_LLVM_MAJOR} \
+            llvm-${OPF_LLVM_MAJOR}-tools libzstd-dev \
+            cmake ninja-build python3 python3-venv \
+            latexmk texlive-latex-extra texlive-fonts-recommended \
+            texlive-latex-recommended
+
+      - name: Build plugin
+        run: bash scripts/build.sh
+
+      - name: Benchmark smoke (one kernel, differential check only)
+        run: |
+          set -eux
+          # Prove the harness and the differential gate run end to end on one
+          # kernel. CI makes no timing claims, so we discard the machine
+          # specific CSV afterward and keep the committed one.
+          bash scripts/run_benchmarks.sh --kernel clean --reps 1 --warmup 0 \
+            --cores none --force
+          git checkout -- benchmarks/results
+
+      - name: Regenerate figures and tables from the committed CSV
+        run: |
+          benchmarks/harness/.venv/bin/python scripts/generate_plots.py
+
+      - name: Build the report PDFs
+        run: |
+          make -C report
+          make -C report_debug
+
+      - name: Upload report PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            report/main.pdf
+            report_debug/debug_report.pdf

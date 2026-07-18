@@ -1,0 +1,38 @@
+\section{Design and Architecture}
+
+The framework is one loadable module built from an object library that is also
+linked into the unit tests, so the tests exercise exactly the code the plugin
+ships. Everything lives in the \texttt{opf} namespace and separates into four
+layers: analyses that read the IR, transforms that rewrite it, support code they
+share, and a single registration file that names them for \texttt{opt}.
+
+\subsection{Analyses}
+
+Each analysis is a new pass manager function analysis returning a plain value
+struct with helpers to print itself and to serialize to JSON. The same struct
+feeds a human readable printer, a combined JSON emitter for the benchmark
+harness, and the unit tests. Crucially, the detection predicates (is this
+instruction dead, is this an algebraic identity, do these two instructions
+compute the same value) are free functions rather than private methods, so the
+transforms consume the identical logic. The analysis and the transform can never
+disagree about what counts as a duplicate, because they call the same function.
+
+\subsection{Transforms}
+
+Each transform is a free function core that returns a rewrite count, wrapped by a
+thin pass. Separating the core out lets the fixed point pipeline call the four
+transforms directly and know whether each made progress, and lets the transforms
+be unit tested without standing up a pass manager. Every transform reports a
+precise \texttt{PreservedAnalyses}: it preserves the control flow graph, which it
+never touches, and nothing else, because it changes instructions and values.
+
+\subsection{The pipeline}
+
+The \texttt{my-default} pipeline runs canonicalize, then simplify, then local
+common subexpression elimination, then dead code elimination, repeating until an
+iteration changes nothing or an iteration cap is reached. The order is the point:
+canonicalization normalizes commutative operands so that duplicates become
+visible, simplification of identities produces newly dead values, dead code
+elimination removes them, and the cleanup can expose further opportunities for
+the next round. A per iteration log records which pass fired and how many
+rewrites it made, and whether a true fixed point was reached.

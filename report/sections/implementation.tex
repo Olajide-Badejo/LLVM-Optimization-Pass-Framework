@@ -1,0 +1,40 @@
+\section{Implementation}
+
+\subsection{The transforms in detail}
+
+\textbf{Canonicalize} reorders the operands of commutative instructions into a
+stable form: constants move to the right, and other operands are ordered by their
+position in the function. Swapping the operands of a commutative operation never
+changes its result, so the rewrite is unconditionally safe, and it makes both
+later passes more effective at once.
+
+\textbf{Algebraic simplify} folds integer identities (an add of zero, a subtract
+of self, a multiply by one or zero, the and, or, and xor identities, and a shift
+by zero) and strength reduces a multiply by a constant power of two into a shift,
+carrying the no signed wrap and no unsigned wrap flags onto the shift. It works
+only on scalar integers. Floating point is left alone because folding a floating
+point identity is unsound without fast math flags, and the predicates only match
+integer constants, so the pass never even considers it. Vectors, volatile, and
+atomic operations are likewise untouched.
+
+\textbf{Local common subexpression elimination} walks each block once and
+replaces a pure computation that repeats an earlier identical one with a
+reference to the first. Two instructions match by a structural key that orders
+commutative operands, which is why canonicalization runs first. Loads are never
+deduplicated, because two identical loads can observe different memory.
+
+\textbf{Dead code elimination} removes trivially dead instructions with a
+worklist, so that deleting one instruction can make its operands dead in turn.
+Anything with a side effect (a store, a volatile or atomic access, a call not
+known to be free of effects) is kept.
+
+\subsection{Correctness by construction and by test}
+
+Every pattern has a lit test that pins the exact IR before and after, and every
+transform has negative tests: a floating point add of zero, a multiply by a non
+power of two, a volatile load, a store, and a call are all shown to survive
+untouched. Beyond the pattern tests, an invalidation test caches an analysis
+result, runs a transform through a real pass manager, and asserts the result
+recomputes rather than serving the stale cache. This test fails if a transform
+over claims what it preserves, which is the single most common way to get the new
+pass manager contract wrong.

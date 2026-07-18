@@ -1,0 +1,18 @@
+I built an out of tree optimization framework for the LLVM middle end: a set of
+analysis and transformation passes that load into a stock \texttt{opt} as a
+plugin on the new pass manager. The analyses report real IR metrics (instruction
+counts by opcode, block structure, dead instructions, use-def chain depth, and
+simplification opportunities). The transforms are deliberately small and
+conservative: operand canonicalization, algebraic identity folding with strength
+reduction of a multiply by a power of two, block local common subexpression
+elimination, and dead code elimination, composed into a fixed point pipeline
+with correct analysis preservation. I validate correctness two ways: lit and
+FileCheck tests pin the exact rewrite for every pattern with negative tests for
+the unsafe cases, and a differential harness runs each benchmark kernel before
+and after transformation and aborts unless the checksums match. Across
+\NumKernels{} kernels the framework removes up to \ArithRedundantReduction\% of
+IR instructions and produces a measurable runtime improvement where there is
+genuine redundancy, makes no change at all to an already optimal kernel, and is
+compared honestly against stock \texttt{opt -O1}, which does more. Every figure
+and number in this report is generated from a recorded run on the target
+machine.

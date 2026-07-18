@@ -1,0 +1,87 @@
+\section{Results}
+
+\subsection{Structural change}
+
+Table~\ref{tab:structural} and Figure~\ref{fig:instrcounts} show the IR
+instruction counts for the baseline, the framework, and \texttt{opt -O1}.
+Figure~\ref{fig:reduction} shows the reduction the framework achieves relative to
+the SSA baseline. The framework removes the most on \texttt{arith\_redundant},
+at \ArithRedundantReduction\%, where the planted redundancy and identities are
+exactly what it targets. On \texttt{clean} it makes no change at all, a
+\CleanReduction\% reduction, which is the correct and expected result for a
+kernel with nothing to simplify.
+
+\begin{table}[h]
+  \centering
+  \input{tables/table_structural}
+  \caption{IR instruction counts by kernel and configuration, with the
+    framework's reduction relative to the baseline.}
+  \label{tab:structural}
+\end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]{instruction_counts.pdf}
+  \caption{Instruction count by kernel and configuration.}
+  \label{fig:instrcounts}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]{instruction_reduction.pdf}
+  \caption{Instruction reduction achieved by the framework, relative to the SSA
+    baseline.}
+  \label{fig:reduction}
+\end{figure}
+
+Figure~\ref{fig:opcode} breaks the change down by opcode for the showcase kernel,
+making visible that the reduction comes from removing multiplies (strength
+reduced to shifts and then deduplicated) and the redundant arithmetic.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]{opcode_delta.pdf}
+  \caption{Per opcode counts for \texttt{arith\_redundant}, baseline against the
+    framework.}
+  \label{fig:opcode}
+\end{figure}
+
+\subsection{Runtime}
+
+Table~\ref{tab:runtime} and Figure~\ref{fig:runtime} report median runtime with
+the interquartile range as an error bar. On \texttt{arith\_redundant} the
+framework moves the median from \ArithRedundantBaseMs{} ms to
+\ArithRedundantOursMs{} ms, a difference well outside the spread and therefore
+real signal. On \texttt{branchy} and \texttt{clean} the runtime change is within
+the interquartile range and is reported as structural only, with the noise stated
+rather than hidden.
+
+\begin{table}[h]
+  \centering
+  \input{tables/table_runtime}
+  \caption{Median runtime and interquartile range by kernel and configuration.}
+  \label{tab:runtime}
+\end{table}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]{runtime_medians.pdf}
+  \caption{Median runtime by kernel and configuration, with the interquartile
+    range as an error bar. The backend was invoked at \texttt{-O0} so that middle
+    end differences reach the binary.}
+  \label{fig:runtime}
+\end{figure}
+
+\subsection{Correctness}
+
+Table~\ref{tab:checksum} records that on every kernel the baseline, framework,
+and \texttt{opt -O1} binaries print an identical checksum, so no transformation
+changed observable behavior.
+
+\begin{table}[h]
+  \centering
+  \input{tables/table_checksum}
+  \caption{Differential execution: every configuration produces the same
+    checksum per kernel.}
+  \label{tab:checksum}
+\end{table}

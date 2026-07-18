@@ -1,0 +1,24 @@
+\section{Introduction}
+
+Modern compilers do most of their interesting work in the middle end, on a
+typed, static single assignment intermediate representation that sits between the
+language frontend and the machine specific backend. LLVM is the dominant
+production infrastructure for this style of work \cite{lattner2004llvm}, and its
+new pass manager is the interface through which analyses and transforms are
+written today \cite{llvm_writing_pass}.
+
+This project builds a small but complete slice of that world from the outside. I
+wrote a plugin that a stock \texttt{opt} binary loads, containing analysis passes
+that measure the IR and transformation passes that rewrite it, wired into a
+configurable pipeline. The goal was never to beat LLVM's own optimizer. It was to
+demonstrate command of the infrastructure: how analyses cache and invalidate,
+how transforms report what they preserve, how a pipeline reaches a fixed point,
+and how to prove that a rewrite is correct rather than merely plausible.
+
+The guiding rule throughout was honesty. Every metric in this report comes from a
+recorded run on the target machine; there are no hand typed numbers in the
+document source. Every transform is gated by a differential execution check that
+runs the compiled kernel before and after and compares its output, so a rewrite
+that changes observable behavior fails the build regardless of how much IR it
+removed. Where the framework does little, the report says so plainly, including a
+kernel on which it correctly does nothing at all.

@@ -1,0 +1,67 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{amsmath}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{figures/}}
+
+% Numbers used in the prose are macros generated from the benchmark CSV, so the
+% body never contains a hand typed measurement.
+\input{tables/values}
+
+% A light listing style for LLVM IR snippets in the appendix.
+\definecolor{irkeyword}{RGB}{0,102,178}
+\definecolor{ircomment}{RGB}{102,102,102}
+\lstdefinestyle{ir}{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{irkeyword},
+  commentstyle=\color{ircomment},
+  morekeywords={define,ret,add,sub,mul,shl,and,or,xor,icmp,br,phi,load,store,i32,i1,void,label},
+  morecomment=[l]{;},
+  columns=fullflexible,
+  keepspaces=true,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{ircomment},
+}
+
+\title{An Out of Tree LLVM Middle End Optimization Framework:\\
+  Custom Analyses, Conservative Transforms, and a Measured Before and After}
+\author{Repository owner}
+\date{July 2026}
+
+\begin{document}
+
+\maketitle
+\begin{abstract}
+\input{sections/abstract}
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\input{sections/introduction}
+\input{sections/background}
+\input{sections/design}
+\input{sections/implementation}
+\input{sections/experiments}
+\input{sections/results}
+\input{sections/discussion}
+\input{sections/limitations}
+\input{sections/futurework}
+\input{sections/conclusion}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\appendix
+\input{sections/appendix}
+
+\end{document}

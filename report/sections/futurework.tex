@@ -1,0 +1,21 @@
+\section{Future Work}
+
+Several extensions follow naturally from the current design without changing its
+character. Promoting common subexpression elimination from block local to a
+dominator tree scoped value numbering would catch redundancy across blocks, and
+the structural key already used for the local version is most of what such a pass
+needs. Adding a conservative constant folding pass would let the framework act on
+the constant foldable opportunities that the analysis already counts but the
+transforms currently leave alone.
+
+A branch and block simplification pass, folding a branch on a known constant
+condition and merging a block into its single predecessor, would close much of
+the gap with \texttt{opt -O1} on the control flow heavy kernels, though it would
+demand more care with the preservation contract because it changes the control
+flow graph. Extending the safe rewrite set to floating point under explicit fast
+math flags, and to vector splats, would broaden coverage while keeping the
+conservative stance.
+
+On the measurement side, running the suite on bare metal Linux with a fixed CPU
+governor would tighten the timing spread enough to make the smaller runtime
+deltas legible, and larger kernels would give the backend more to differentiate.

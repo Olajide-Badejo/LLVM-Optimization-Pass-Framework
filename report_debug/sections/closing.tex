@@ -1,0 +1,17 @@
+\section{Closing}
+
+Looking back, the problems fell into a few families. The tooling surprises (the
+version pin, the zstd target, the spaces in the path, and optnone) were each a
+short fix once understood, but each cost real time to diagnose because the error
+message pointed at a symptom rather than the cause. The pass manager mechanics
+were where the actual learning was: the preservation contract is simple to state
+and easy to get wrong, and the only way I trusted my implementation was to write
+a test that fails when it is wrong and prove that it does. The correctness work
+was mostly discipline, refusing to rewrite anything I could not prove safe, and
+backing that refusal with negative tests. The measurement work was about honesty
+under imperfect conditions.
+
+If there is one habit this project reinforced, it is that a guardrail you have
+watched fail is worth more than one you have only reasoned about. The differential
+gate, the invalidation test, and the generated figures each exist because I did
+not want to trust an assumption I could instead check.

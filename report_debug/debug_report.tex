@@ -1,0 +1,45 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{ircomment}{RGB}{102,102,102}
+\lstdefinestyle{code}{
+  basicstyle=\ttfamily\small,
+  columns=fullflexible,
+  keepspaces=true,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{ircomment},
+}
+
+\title{Debug Report: What Broke and How I Fixed It}
+\author{Repository owner}
+\date{July 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This is the companion postmortem to the main report. Where that document
+presents the framework and its measured results, this one is the honest account
+of the problems I hit building it, grouped by theme, with the symptom, the root
+cause, and the fix for each. It is a deliverable of equal rank, kept to honest
+length. The primary source is the dated engineering log kept from the first
+phase.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\input{sections/tooling}
+\input{sections/passmanager}
+\input{sections/correctness}
+\input{sections/measurement}
+\input{sections/closing}
+
+\end{document}

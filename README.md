@@ -11,17 +11,30 @@ that composes them, all on the new PassManager.
 
 ## Status
 
-Under construction, built phase by phase against the roadmap in the build
-specification. The pinned toolchain is **LLVM 21** (apt `llvm-21` on Ubuntu).
-Runtime numbers in this README are placeholders until the benchmark suite has
-run on the target machine; they will be replaced with measured wall clock.
+Complete and tagged `v1.0.0`. The pinned toolchain is **LLVM 21** (apt
+`llvm-21` on Ubuntu). All unit, lit, integration, and differential tests pass,
+the benchmark suite has run on the target machine, and both report PDFs build
+with zero errors.
+
+### Measured wall clock
+
+On the target machine (Intel Core i7-14700K, 32 GB, WSL2 Ubuntu), timed with
+`/usr/bin/time`:
+
+- Clean build plus full test suite (unit and lit): about 1 minute (measured 59
+  seconds). No LLVM source build; links against distribution LLVM.
+- Full benchmark suite (all kernels, baseline vs framework vs `opt -O1`, timed
+  with warmup and repetitions): about 7 seconds (measured 6.6 seconds).
+- Each report PDF: a few seconds.
+
+These replace the pre build estimates from the specification.
 
 ## Requirements
 
 Linux, native or WSL2. On the target machine the project is built inside WSL2
 Ubuntu against distribution LLVM. No LLVM source build is required or performed.
 
-```
+```bash
 sudo apt-get install llvm-21-dev clang-21 llvm-21-tools clang-format-21 \
                      cmake ninja-build latexmk texlive-latex-extra python3-venv
 ```
@@ -31,7 +44,7 @@ targets and scripts.
 
 ## Build
 
-```
+```bash
 make build
 ```
 
@@ -40,24 +53,38 @@ reports, and produces `build/lib/libOPFPasses.so`.
 
 ## Test
 
-```
+```bash
 make test         # build, then unit (ctest) and lit/FileCheck suites
-make check-style  # dash lint and clang-format check
+make check-style  # dash lint, clang-format, and ruff
 ```
 
 ## Run a pass by hand
 
-```
-opt -load-pass-plugin=build/lib/libOPFPasses.so \
-    -passes="my-noop" -S input.ll
+```bash
+opt-21 -load-pass-plugin=build/lib/libOPFPasses.so \
+       -passes="my-default" -S input.ll
 ```
 
-Once later phases land, the same mechanism drives the real pipeline, for example
-`-passes="my-default"` or `-passes="my-canon,my-simplify,my-dce"`.
+The same mechanism runs any registered pass or pipeline, for example the
+individual stages `-passes="my-canon,my-simplify,my-local-cse,my-dce"` or an
+analysis printer such as `-passes="my-print-opcode-stats"`. See
+[docs/usage.md](docs/usage.md) for the full list.
+
+## Benchmarks and report
+
+```bash
+make bench          # run the differential benchmark suite, write the CSV
+make report         # build report/main.pdf from the committed CSV
+make report-debug   # build report_debug/debug_report.pdf
+```
+
+`scripts/generate_plots.py` turns the benchmark CSV into the report figures and
+tables, so no number in the report is typed by hand. See
+[docs/benchmarks.md](docs/benchmarks.md).
 
 ## Layout
 
-```
+```text
 include/opf/   public headers: analysis/, transforms/, support/
 lib/           one .cpp per header, plus plugin_registration.cpp
 tests/         lit/ (FileCheck IR tests), unit/ (GoogleTest)

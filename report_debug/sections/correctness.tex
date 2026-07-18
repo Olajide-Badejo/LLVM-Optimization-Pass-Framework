@@ -1,0 +1,37 @@
+\section{Pattern correctness}
+
+\subsection{The differential gate earns its keep}
+
+The single most important safety mechanism in the project is the differential
+execution check. Every kernel prints a checksum of its computation, and the
+harness aborts unless the baseline, the framework, and \texttt{opt -O1} all print
+the same value. A transform that removes instructions but changes the answer is a
+miscompile, and without this gate it would look like a great result: fewer
+instructions, faster runtime, wrong output. With the gate, that outcome is a
+failed run instead.
+
+This shaped how I wrote the transforms. Every rewrite is value preserving by
+construction on scalar integers, and the pass refuses to touch anything it cannot
+prove safe. Floating point is the clearest example: an add of zero is not an
+identity for floating point without fast math flags, because it changes the sign
+of a negative zero. The simplifier never even considers it, because its
+predicates only match integer constants, and a negative test pins that a floating
+point add of zero survives untouched.
+
+\subsection{Negative tests are half the suite}
+
+For every positive rewrite there is a negative test proving the unsafe neighbor
+is left alone: a multiply by a non power of two is not turned into a shift, a
+volatile load is not eliminated as dead, a store and a call with effects are
+kept, and two constant operands are not folded because this pass does not claim
+to do constant folding. Writing these was as valuable as writing the rewrites,
+because they document the exact boundary of what each pass promises, and they
+would catch a future change that quietly over reached.
+
+\subsection{Strength reduction and the wrap flags}
+
+Turning a multiply by a power of two into a shift is only correct if the overflow
+behavior is preserved. A \texttt{mul nsw} promises no signed overflow, and the
+equivalent shift must carry that promise, so the pass copies the no signed wrap
+and no unsigned wrap flags onto the shift it creates. A lit test checks the flags
+appear on the result, not just the shift itself.

@@ -1,0 +1,26 @@
+\section{Discussion}
+
+The comparison against \texttt{opt -O1} is the honest heart of this report. On
+\texttt{dead\_code}, \texttt{opt -O1} reduces the function far below what the
+framework does, because it recognizes that the entire computation is dead and
+removes the loop, while the framework's block local dead code elimination only
+removes the straight line dead chain. On \texttt{branchy} and \texttt{clean},
+\texttt{opt -O1} restructures control flow and unrolls loops, which can raise the
+static instruction count even as it lowers runtime; the framework does neither,
+so its instruction count only ever goes down. These are not shortcomings to
+apologize for. They are the visible boundary of a deliberately small pass set,
+and drawing that boundary clearly was a goal.
+
+Where the framework does have real redundancy to work with, on
+\texttt{arith\_redundant}, it produces both a structural reduction and a runtime
+improvement that exceeds the measurement noise. That is the case the passes were
+built for, and it shows that the pieces compose as intended: canonicalization
+feeding common subexpression elimination, simplification feeding dead code
+elimination, iterated to a fixed point.
+
+The most valuable outcome was not any single rewrite but the discipline the
+project enforced. The differential checksum gate caught the class of bug that
+matters most, a miscompile, before it could ever be mistaken for a good result.
+The invalidation test made the pass manager preservation contract concrete rather
+than assumed. And generating every figure and number from the recorded CSV means
+the report cannot drift from the measurement.

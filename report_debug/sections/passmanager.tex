@@ -1,0 +1,35 @@
+\section{Pass manager mechanics}
+
+\subsection{Proving invalidation instead of assuming it}
+
+The new pass manager's preservation contract is easy to get subtly wrong. A
+transform returns a \texttt{PreservedAnalyses} set, and it is tempting, or simply
+habitual, to return \texttt{all()} and move on. If the transform actually changed
+the IR, that leaves later passes reading stale cached analysis results. This is
+exactly the class of mistake the project is meant to demonstrate command over, so
+I did not want to trust my own eye on it.
+
+The transforms here change instructions and values but never the control flow
+graph, so the honest answer is to preserve the CFG set and nothing else. To make
+sure that stays true, I wrote an invalidation test: it caches an opcode count,
+runs the algebraic simplifier through a real function pass manager so the
+invalidation machinery actually runs, then asks for the count again and asserts
+it dropped. If the simplifier returned \texttt{all()}, the manager would hand back
+the stale count and the test would fail.
+
+I did not just assume the test was meaningful. I temporarily changed the
+simplifier to return \texttt{PreservedAnalyses::all()}, rebuilt, and watched the
+invalidation test fail; then I reverted and watched it pass. That experiment is
+what makes the test trustworthy: it fails for the reason it claims to.
+
+\subsection{The chain depth that could have looped forever}
+
+The use-def chain depth metric walks operand dependencies looking for the longest
+chain. In straight line code the dependency graph is acyclic, but a phi node in a
+loop can make a value depend, transitively, on itself, which would send a naive
+recursion into an infinite loop. I resolved it by treating phi nodes as chain
+roots: the traversal stops at a phi and does not recurse into its operands. This
+keeps the walk finite and gives the metric a clean meaning, the longest straight
+line data dependency, with loop carried dependencies deliberately not counted. A
+unit test on a loop kernel exists mostly to prove the traversal terminates at
+all.

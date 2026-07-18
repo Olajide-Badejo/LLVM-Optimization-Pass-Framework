@@ -1,0 +1,37 @@
+\section{Experiments}
+
+\subsection{Kernels}
+
+Four C kernels exercise different parts of the framework. \texttt{arith\_%
+redundant} has planted algebraic identities and repeated scalar computations,
+so it is where simplification and common subexpression elimination have real
+work. \texttt{dead\_code} builds a chain of computations that nothing observable
+uses. \texttt{branchy} places identities inside control flow, which the framework
+simplifies within blocks but deliberately does not fold across them.
+\texttt{clean} is a tight loop with no identities, no redundancy, and no dead
+code: the expected result is no change, an honest negative.
+
+\subsection{Method}
+
+For each kernel the harness runs one deterministic pipeline. It compiles with
+\texttt{clang -O0} (with the \texttt{optnone} attribute disabled so that
+\texttt{opt} does not skip the functions), then runs \texttt{mem2reg} to obtain a
+baseline in SSA form. The \texttt{mem2reg} step is universal canonicalization
+into SSA that any middle end assumes; it is not one of the framework's passes,
+and both the framework's \texttt{my-default} pipeline and stock \texttt{opt -O1}
+start from the same baseline so the comparison is fair.
+
+Structural metrics for the baseline, the framework, and \texttt{opt -O1} come
+from the plugin's own JSON emitter. Each configuration is then compiled to a
+binary at \texttt{-O0}, so that the backend does not re-optimize and hide the
+middle end differences, and run under \texttt{taskset} with warmup runs
+discarded; the median wall clock time and its interquartile range are recorded.
+
+\subsection{The differential gate}
+
+Every kernel prints a checksum of its computation. The harness runs the baseline,
+framework, and \texttt{opt -O1} binaries and aborts the entire run unless all
+three print the same checksum. This is the safety net for correctness: a
+transform that changes observable output fails here immediately, whatever the
+instruction counts say. Across all \NumKernels{} kernels the checksums agree, as
+Table~\ref{tab:checksum} records.

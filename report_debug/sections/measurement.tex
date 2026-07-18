@@ -1,0 +1,25 @@
+\section{Measurement noise}
+
+The timing results come from a single machine running under WSL2, and I decided
+early not to pretend otherwise. There is no control over the CPU frequency
+governor under WSL, so the samples carry a few milliseconds of jitter that no
+amount of averaging removes. The kernels run in tens of milliseconds, so for the
+kernels whose structural change is small, the runtime difference genuinely falls
+inside the measurement spread.
+
+The tempting move was to inflate the workloads until every kernel showed a clean
+runtime difference. I did not do that, because it would manufacture a runtime
+story that the passes did not earn. Instead the harness reports the median with
+the interquartile range, the runtime figure draws that range as an error bar so a
+reader can see which deltas are signal, and the prose labels the noise dominated
+kernels as structural only. One kernel, the arithmetic heavy one with real
+redundancy, shows a runtime improvement clearly outside the spread, and that is
+the one case where a runtime claim is warranted.
+
+The timing hygiene I could apply, I did: a fixed repetition count with warmup
+runs discarded, the median rather than the mean so a single slow sample does not
+dominate, and pinning to a fixed set of cores with \texttt{taskset}. The manifest
+records the repetition count, the core list, and a note that the governor is
+unavailable, so the conditions travel with the numbers. Better numbers would come
+from bare metal Linux with a pinned governor, which is noted as future work
+rather than quietly assumed.

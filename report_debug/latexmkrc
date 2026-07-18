@@ -1,0 +1,3 @@
+# Build the debug report PDF with pdflatex.
+$pdf_mode = 1;
+$out_dir = ".";

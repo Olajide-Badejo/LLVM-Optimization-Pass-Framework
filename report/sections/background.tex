@@ -1,0 +1,35 @@
+\section{Background}
+
+\subsection{LLVM IR and SSA}
+
+LLVM IR is a typed intermediate representation in static single assignment form.
+Every value is defined exactly once, and a use always refers to a single
+definition, so the data flow of a function is explicit in its structure. Control
+flow is a graph of basic blocks, each a straight line sequence of instructions
+ending in a terminator (a branch, a return, and so on). Where control flow
+merges, a phi node selects a value based on which predecessor block was taken.
+The full semantics are specified in the language reference \cite{llvm_langref}.
+
+This form is what makes middle end optimization tractable. Because each value has
+one definition, an analysis can reason about a computation without tracking
+assignments, and a transform can replace all uses of a value in one operation.
+The transforms in this project rely on exactly that: replacing a redundant
+computation, or an identity such as an add of zero, is a single replace all uses
+followed by an erase.
+
+\subsection{The new pass manager}
+
+The new pass manager is LLVM's current framework for running middle end work
+\cite{llvm_writing_pass}. A transform is a small type with a \texttt{run} method
+returning a \texttt{PreservedAnalyses} set that states precisely which cached
+analyses survive the change. An analysis is a type that computes a result and is
+cached by an analysis manager, which invalidates the cache when a transform does
+not preserve it. Getting that contract right is central: a transform that claims
+to preserve an analysis it actually invalidated leaves later passes reading stale
+facts.
+
+A plugin registers its passes through \texttt{PassBuilder} callbacks and exposes
+them by name, so a stock \texttt{opt} can run them from a pipeline string such as
+\texttt{-passes="my-canon,my-simplify,my-dce"} with no patched binary
+\cite{llvm_project}. This project is such a plugin, built against a distribution
+LLVM with no source build of the compiler itself.

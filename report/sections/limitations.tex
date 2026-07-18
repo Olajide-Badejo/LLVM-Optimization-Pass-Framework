@@ -1,0 +1,21 @@
+\section{Limitations}
+
+This framework reimplements a thin slice of what LLVM's \texttt{instcombine} and
+dead code passes already do, and it does so on purpose, to keep every rewrite
+small enough to verify exhaustively. It is not a general optimizer and does not
+try to be.
+
+The scope is scalar integer IR. Floating point, vectors, volatile, and atomic
+operations are recognized and skipped rather than handled. Common subexpression
+elimination is block local, so redundancy that spans blocks, which a global value
+numbering pass would catch, is left in place. The transforms do not fold branches
+or simplify the control flow graph, which is why a real \texttt{opt -O1} pulls
+ahead on the control flow heavy kernels.
+
+The timing results are from a single machine running under WSL2, where there is
+no control over the CPU frequency governor, so a few milliseconds of jitter are
+expected. The kernels run in tens of milliseconds, so for the kernels with a
+small structural change the runtime difference falls within the measurement
+spread and is reported as structural only rather than dressed up as a speedup.
+The one kernel with substantial redundancy shows a runtime improvement clearly
+outside that spread.

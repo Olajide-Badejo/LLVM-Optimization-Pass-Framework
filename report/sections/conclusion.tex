@@ -1,0 +1,16 @@
+\section{Conclusion}
+
+I set out to build a production quality slice of the LLVM middle end from the
+outside, and to hold it to the standard that matters: correct first, measured
+honestly, and reproducible from a clean clone. The framework loads into a stock
+\texttt{opt}, reports real IR metrics, and applies a set of conservative
+transforms that compose into a fixed point pipeline with a correct preservation
+contract. Its effect is visible in both structure and, where there is genuine
+redundancy, runtime, and it is compared without flattery against the optimizer it
+borrows a slice of behavior from.
+
+The engineering value was in the guardrails as much as the passes: a differential
+execution gate that turns a miscompile into a failed build, an invalidation test
+that makes the preservation contract concrete, and a report whose every number is
+generated from a recorded run. Those are the habits that separate a demonstration
+from a toy, and they are what I would carry into real middle end work.

@@ -1,0 +1,45 @@
+\section{Tooling and build surprises}
+
+\subsection{find\_package rejected the version I pinned}
+
+The first wall was CMake. I wanted to pin the LLVM major version, so I wrote
+\texttt{find\_package(LLVM 21 REQUIRED CONFIG)}. It failed, reporting that the
+\texttt{LLVMConfig.cmake} advertising version 21.1.8 was considered but not
+accepted. LLVM's generated version config does not treat a bare major of 21 as
+compatible with the concrete 21.1.8 it ships. Requesting the full patch version
+would hard code a number that changes on every apt update. The fix was to take
+whatever configuration \texttt{LLVM\_DIR} points at and enforce the pin myself
+with a fatal error guard on \texttt{LLVM\_VERSION\_MAJOR}. The pin stays at major
+granularity and still fails loudly on the wrong toolchain.
+
+\subsection{The plugin linked, the unit tests did not}
+
+Linking the standalone unit test executable against the LLVM component libraries
+surfaced a second issue: \texttt{LLVMSupport} declares a link dependency on
+\texttt{zstd::libzstd\_shared}, an imported target that did not exist because I
+had not asked for it. The distribution LLVM was built with zstd. The fix was to
+resolve the zstd package before LLVM's config is read, with a small shim that
+constructs the imported target from the library on disk if the system's zstd
+ships no CMake package, so a continuous integration machine stays portable.
+
+\subsection{Spaces in the checkout path broke lit}
+
+The plugin built and ran by hand, but the lit smoke test failed with FileCheck
+complaining of too many positional arguments and a library that could not be
+loaded. The checkout lives under a Windows Documents folder mounted into WSL,
+whose path contains spaces. lit substitutes paths as raw text into a RUN line
+that the shell then splits on those spaces. Rather than move the project, I made
+quoting a project convention: every RUN line wraps its substitutions in double
+quotes. This is strictly more robust, since it also survives a user cloning into
+a spaced path, which LLVM's own in tree tests never have to consider.
+
+\subsection{optnone made the whole pipeline a no-op}
+
+The most surprising one. The first time I ran the pipeline on a real kernel, it
+reported zero rewrites on functions I knew were full of identities.
+\texttt{clang -O0} attaches the \texttt{optnone} attribute to every function, and
+the new pass manager honors it by skipping optimization entirely. My passes were
+loaded and registered; they were simply never run. The fix was one flag,
+\texttt{-Xclang -disable-O0-optnone}, which keeps the naive unoptimized baseline
+I wanted while letting \texttt{opt} actually transform it. The harness sets it for
+every kernel and records it in the manifest.
