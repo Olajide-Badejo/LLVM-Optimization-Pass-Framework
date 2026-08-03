@@ -1,4 +1,4 @@
-# LLVM Optimization Pass Framework 
+# LLVM Optimization Pass Framework
 
 [![CI](https://github.com/Olajide-Badejo/LLVM-Optimization-Pass-Framework/actions/workflows/ci.yml/badge.svg)](https://github.com/Olajide-Badejo/LLVM-Optimization-Pass-Framework/actions/workflows/ci.yml)
 ![LLVM 21](https://img.shields.io/badge/LLVM-21-blue)
